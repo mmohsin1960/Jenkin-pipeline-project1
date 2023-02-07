@@ -1,0 +1,31 @@
+node {
+    stage('Git Checkout'){
+        git branch: 'main', url: 'https://github.com/mmohsin1960/Jenkin-pipeline-project1.git'
+        sh 'pwd '
+        sh 'ls'
+    }
+    
+    stage('docker build image'){
+        sh 'docker image build -t $JOB_NAME:v1.$BUILD_ID .'
+        sh 'docker image tag $JOB_NAME:v1.$BUILD_ID mohsin1056/$JOB_NAME:v1.$BUILD_ID'              // with build ID tag 
+        sh 'docker image tag $JOB_NAME:v1.$BUILD_ID mohsin1056/$JOB_NAME:latest'                    // with latest tag
+        
+    }
+    
+    stage ('docker push image'){
+        withCredentials([string(credentialsId: 'docker-pass', variable: 'dockerpass')]) {           //use variable  for password    (pipeline syntax)
+        sh "docker login -u mohsin1056 -p ${dockerpass}"                                            //loging docker hub
+        sh 'docker image push mohsin1056/$JOB_NAME:v1.$BUILD_ID'
+        sh 'docker image push mohsin1056/$JOB_NAME:latest'
+        sh 'docker rmi $JOB_NAME:v1.$BUILD_ID mohsin1056/$JOB_NAME:v1.$BUILD_ID mohsin1056/$JOB_NAME:latest'        // removing already placed images
+        }
+    }
+    
+    stage('Deploy contianer to App Server'){
+            // Write vairable for this command 
+        sshagent(['webaap']) {                                                                  //ssh agent plugin should instlal before write this  (pipeline syntax)
+        sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.185 docker run -itd --name mywebaap -p 9000:80 mohsin1056/webapp-pipeline1'                    // name given as on docker hub repo 
+        }
+                                                   
+    }
+}
