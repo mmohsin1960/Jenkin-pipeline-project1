@@ -22,9 +22,14 @@ node {
     }
     
     stage('Deploy contianer to App Server'){
-            // Write vairable for this command 
+        def docker_rmv_cont = 'docker rm -f my mywebaap'    // Write vairable for this command 
+        def docker_rmi_img = 'docker rmi -f mywebaap'
         sshagent(['webaap']) {                                                                  //ssh agent plugin should instlal before write this  (pipeline syntax)
-        sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.185 docker run -itd --name mywebaap -p 9000:80 mohsin1056/webapp-pipeline1'                    // name given as on docker hub repo 
+        
+        sh "ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.185 ${docker_rmv_cont}"
+        sh "ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.185 ${docker_rmi_img}"
+        sh 'ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.185 docker run -itd --name mywebaap -p 9000:80 mohsin1056/webapp-pipeline1'                    // name given as on docker hub repo
+        
         }
                                                    
     }
