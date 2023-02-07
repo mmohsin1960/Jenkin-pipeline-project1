@@ -30,12 +30,11 @@ pipeline {
         
         stage("Deploy to Prod Server") {
             steps {
-                def remove_container = 'docker rm -f mywebapp'
-                def remove_image = 'docker rmi -f mywebapp'
+               
                 
                 sshagent(['prodserver']) {
-                    sh "ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.230 ${remove_container}"
-                    sh "ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.230 ${remove_image}"
+                    sh "ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.230 docker rm -f mywebapp"
+                    sh "ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.230 docker rmi -f mywebapp"
                     sh "ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.230 docker run -itd --name mywebapp -p 9001:80 mohsin1056/task"
                 }
             }
